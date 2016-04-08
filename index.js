@@ -1,5 +1,6 @@
 var amqp = require('amqplib/callback_api.js');
 
+// Example to build multiple Queues and stuff them with data
 amqp.connect('amqp://localhost', function(err, conn) {
     conn.createChannel(function(err, ch) {
         var alertQueue = 'alertQueue';
