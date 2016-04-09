@@ -66,8 +66,20 @@ amqp.connect('amqp://localhost', function(err, conn) {
             ch.publish(importantNews, importantInfoKey, new Buffer("Städtenews"));
         }, 1000);
 
+        var boullevardNews = 'boulevard_news';
+        var boullevardNewsKey = 'boulevard.news';
+        ch.assertExchange(boullevardNews, 'topic', {durable: true, autoDelete: true});
+
+        ch.bindQueue(topicQueue_news, boullevardNews, boullevardNewsKey);
+        ch.bindQueue(topicQueue_boullevard, boullevardNews, boullevardNewsKey);
+
+        setTimeout(function() {
+            ch.publish(boullevardNews, boullevardNewsKey, new Buffer('Michael Jackson wieder auferstanden!'));
+            ch.publish(boullevardNews, boullevardNewsKey, new Buffer('3 Weltkrieg ausgebrochen'));
+        }, 2000);
+
         setTimeout(function() {
             conn.close();
-        }, 1500);
+        }, 2200);
     });
 });
