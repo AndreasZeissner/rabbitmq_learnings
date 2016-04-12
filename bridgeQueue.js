@@ -21,54 +21,58 @@
 /*
 * 1. Building the producer
 * */
+var amqp = require('amqplib/callback_api.js');
+
+var ExchangeBuilder = require('forever-rabbit').exchangeBuilder();
+var QueryBinder = require('forever-rabbit').queueBinder();
+
+//ExchangeBuilder.bulkCreate('amqp://localhost', 'config/exchange.json');
+//setTimeout(function() {
+//    QueryBinder.bindQueues('amqp://localhost', 'config/exchange.json');
+//}, 1000);
+// require('forever-rabbit').kill();
 
 var amqp = require('amqplib/callback_api.js');
-// 1.1 Setting up the producer
-amqp.connect('amqp://localhost', function(err, conn) {
-    // creating a channel
-    conn.createChannel(function(err, ch) {
-        // 1.2 It should have log info warn exchanges
-            // important
-        var priortiyInfo = 'collects-all-info-messages';
-            // giving the key for the queues
-        var priorityInfoKey = 'priority.info';
-            // assert a Topic exchange
-        ch.assertExchange(
-            priortiyInfo,
-            'topic',
-            {
-                durable: false,
-                autoDelete: false
-            });
 
-            // log
-        var priorityLog = 'collects-all-log-messages';
-        var priorityLogKey = 'priority.log';
-        ch.assertExchange(
-            priorityLog,
-            'topic',
-            {
-                durable: false,
-                autoDelete: false
-            });
+var express = require('express');
+var bodyParser = require('body-parser');
+var service = express();
 
-            // warn
-        var priorityWarn = 'collect-all-warn-messages';
-        var priorityWarnKey = 'priortiy.warn';
-        ch.assertExchange(
-            priorityWarn,
-            'topic',
-            {
-                durable: false,
-                autoDelete: false,
-            });
+service.use(bodyParser.urlencoded({ extended: true }));
+service.use(bodyParser.json());
 
-        // closing the connection
-        setTimeout(function() {
-            ch.close();
-            process.exit();
-        }, 1000);
+var router = express.Router();
 
+router.use(function (req, res, next) {
 
-    })
+    next();
+});
+service.use('/messaging/api', router);
+
+router.route('/postsfromsap')
+    .post(function(req, res, next) {
+        console.log(req.body);
+    });
+//amqp.connect('amqp://localhost', function(err, conn) {
+//    // creating a channel
+//    conn.createChannel(function(err, ch) {
+//        var msg = {
+//            name: "TEST",
+//            version: 1.2
+//        };
+//        msg = JSON.stringify(msg);
+//        ch.publish('collect-all-logs', 'priority.log.machinelogs' , new Buffer(msg));
+//        // closing the connection
+//        setTimeout(function() {
+//            ch.close();
+//            process.exit();
+//        }, 1000);
+//    })
+//});
+
+var server = service.listen(3000, function () {
+    var host = server.address().address;
+    var port = server.address().port;
+
+    console.log('Example app listening at http://%s:%s', host, port);
 });
