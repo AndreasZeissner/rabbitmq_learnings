@@ -51,24 +51,21 @@ service.use('/messaging/api', router);
 
 router.route('/postsfromsap')
     .post(function(req, res, next) {
-        console.log(req.body);
+        amqp.connect('amqp://localhost', function(err, conn) {
+            // creating a channel
+            conn.createChannel(function(err, ch) {
+                var msg = req.body;
+                msg = JSON.stringify(msg);
+                ch.publish('collect-all-logs', 'priority.log.machinelogs' , new Buffer(msg));
+                // closing the connection
+                setTimeout(function() {
+                    ch.close();
+                    res.json(msg);
+                }, 300);
+            })
+        });
     });
-//amqp.connect('amqp://localhost', function(err, conn) {
-//    // creating a channel
-//    conn.createChannel(function(err, ch) {
-//        var msg = {
-//            name: "TEST",
-//            version: 1.2
-//        };
-//        msg = JSON.stringify(msg);
-//        ch.publish('collect-all-logs', 'priority.log.machinelogs' , new Buffer(msg));
-//        // closing the connection
-//        setTimeout(function() {
-//            ch.close();
-//            process.exit();
-//        }, 1000);
-//    })
-//});
+
 
 var server = service.listen(3000, function () {
     var host = server.address().address;

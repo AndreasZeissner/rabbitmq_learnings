@@ -83,3 +83,4 @@ amqp.connect('amqp://localhost', function(err, conn) {
         }, 2200);
     });
 });
+require('getAllNews.js');
